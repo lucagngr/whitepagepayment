@@ -7,6 +7,9 @@ const path = require("path");
 const mongoose = require('mongoose');
 const Payment = require('./models/payment');
 const MONGODB_URI = "mongodb://localhost:27017/stripe_payments";
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripePublicKey = process.env.STRIPE_PUBLIC_KEY;
+
 
 const app = express();
 app.use(cors());
@@ -47,7 +50,7 @@ app.post('/create-payment-intent', async (req, res) => {
         });
         await payment.save();
 
-        res.json({ clientSecret: paymentIntent.client_secret }); // Retourne le client_secret au frontend
+        res.json({ clientSecret: paymentIntent.client_secret }); 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
