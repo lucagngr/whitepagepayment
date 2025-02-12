@@ -9,10 +9,13 @@
 <body>
     <h2>Payer avec Stripe</h2>
     <form id="payment-form">
+        <input type="text" id="first-name" placeholder="First Name" required>
+        <input type="text" id="last-name" placeholder="Last Name" required>
+        <input type="email" id="email" placeholder="Email" required>
         <div id="card-element"></div>
-        <button type="submit">Payer</button>
-        <p id="payment-message"></p>
+        <button type="submit">Pay</button>
     </form>
+    <p id="payment-message"></p>
 
     <script src="https://js.stripe.com/v3/"></script>
     <script src="payment.js"></script>

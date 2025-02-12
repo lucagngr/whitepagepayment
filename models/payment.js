@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const PaymentSchema = new mongoose.Schema({
     amount: Number,
     currency: String,
+    name: String,
+    email: String,
+    createdAt: Date,
     paymentIntentId: String,
     createdAT: { type: Date, default: Date.now}
 });

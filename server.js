@@ -6,15 +6,13 @@ const cors = require('cors');
 const path = require("path");
 const mongoose = require('mongoose');
 const Payment = require('./models/payment');
+
 const MONGODB_URI = "mongodb://localhost:27017/stripe_payments";
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripePublicKey = process.env.STRIPE_PUBLIC_KEY;
-
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json()); 
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -32,20 +30,26 @@ mongoose.connect(MONGODB_URI)
 
 app.post('/create-payment-intent', async (req, res) => {
     try {
-        const { amount, currency } = req.body;
+        const { amount, currency, name, email } = req.body; 
+        
+        if (!name || !email || !amount || !currency) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
 
-        // Created PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency,
             payment_method_types: ['card']
         });
 
-        // Save PaymentIntent in MongoDB
+      
         const payment = new Payment({
             amount,
             currency,
-            paymentIntentID: paymentIntent.id,
+            name,
+            email,
+            createdAt: new Date(),
+            paymentIntentId: paymentIntent.id,
             status: "pending"
         });
         await payment.save();
@@ -59,16 +63,14 @@ app.post('/create-payment-intent', async (req, res) => {
 
 app.post('/confirm-payment', async (req, res) => {
     try {
-        const { paymentIntentId } = req.body;
+        const { paymentIntentId, name, email } = req.body;
 
-        // Recept payment status from Stripe
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-        // update payment status in MongoDB
         if (paymentIntent.status === "succeeded") {
             await Payment.findOneAndUpdate(
-                { paymentIntentID: paymentIntentId },
-                { status: "succeeded" }
+                { paymentIntentId }, 
+                { status: "succeeded", name, email } 
             );
         }
 
